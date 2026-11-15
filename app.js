@@ -1,3 +1,51 @@
+// Simple sound system
+window.playSound = function(type) {
+  if (!window.soundEnabled) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  if (type === 'correct') {
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+  } else if (type === 'wrong') {
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.2);
+  } else if (type === 'drop') {
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+  }
+  gain.gain.setValueAtTime(0.1, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.3);
+};
+
+window.soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+
+// Theme toggle
+function toggleTheme() {
+  document.body.classList.toggle('light-theme');
+  const isLight = document.body.classList.contains('light-theme');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+}
+
+// Reset progress
+function resetProgress() {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    state.points = 0;
+    state.completedSims = [];
+    state.quizScores = {};
+    localStorage.clear();
+    updateStats();
+    renderSimList();
+    renderQuizList();
+    renderAchievements();
+    alert('Progress reset!');
+  }
+}
+
 // App State
 let state = {
   points: parseInt(localStorage.getItem('points') || '0'),
@@ -91,6 +139,27 @@ const simulations = [
     desc: 'See forces and acceleration',
     emoji: '🚀',
     run: runNewton
+  },
+  {
+    id: 'circuit',
+    title: 'Simple Circuit',
+    desc: 'Explore Ohm\'s Law: V = IR',
+    emoji: '💡',
+    run: runCircuit
+  },
+  {
+    id: 'optics',
+    title: 'Light Reflection',
+    desc: 'See how light reflects off a mirror',
+    emoji: '🌈',
+    run: runOptics
+  },
+  {
+    id: 'waves',
+    title: 'Wave Motion',
+    desc: 'Amplitude and frequency of waves',
+    emoji: '🌊',
+    run: runWaves
   }
 ];
 
@@ -404,6 +473,177 @@ function runNewton() {
   animate();
 }
 
+function runCircuit() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Voltage (V): <input type="range" id="voltage" min="1" max="24" value="12"> <span id="v-val">12</span></label>
+    <label>Resistance (Ω): <input type="range" id="resistance" min="1" max="100" value="10"> <span id="r-val">10</span></label>
+    <button class="btn" onclick="if(window.playSound) window.playSound('drop')">Test Sound</button>
+  `;
+  
+  explanation.innerHTML = `<strong>Ohm's Law:</strong> Current (I) = Voltage (V) / Resistance (R). Higher voltage or lower resistance means more current.`;
+
+  let V = 12, R = 10;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('voltage').oninput = (e) => {
+    V = +e.target.value;
+    document.getElementById('v-val').textContent = V;
+  };
+  document.getElementById('resistance').oninput = (e) => {
+    R = +e.target.value;
+    document.getElementById('r-val').textContent = R;
+  };
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const I = (V / R).toFixed(2);
+
+    // Simple circuit visual
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(100, 100, 300, 150);
+    
+    // Battery
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(90, 160, 20, 30);
+    ctx.fillStyle = 'white';
+    ctx.font = '12px Inter';
+    ctx.fillText(V + 'V', 70, 180);
+
+    // Resistor
+    ctx.fillStyle = '#ec4899';
+    ctx.fillRect(230, 90, 40, 20);
+    ctx.fillStyle = 'white';
+    ctx.fillText(R + 'Ω', 235, 105);
+
+    // Current label
+    ctx.fillStyle = '#6366f1';
+    ctx.font = '20px Poppins';
+    ctx.fillText('Current: ' + I + ' A', canvas.width/2 - 80, 320);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runOptics() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Angle of Incidence: <input type="range" id="inc-angle" min="10" max="80" value="45"> <span id="inc-val">45°</span></label>
+  `;
+  
+  explanation.innerHTML = `<strong>Law of Reflection:</strong> Angle of incidence = Angle of reflection.`;
+
+  let angle = 45;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('inc-angle').oninput = (e) => {
+    angle = +e.target.value;
+    document.getElementById('inc-val').textContent = angle + '°';
+  };
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Mirror
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(50, 300);
+    ctx.lineTo(canvas.width - 50, 300);
+    ctx.stroke();
+
+    const rad = angle * Math.PI / 180;
+    const centerX = canvas.width / 2;
+    const mirrorY = 300;
+
+    // Incident ray
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(centerX - 150 * Math.sin(rad), mirrorY - 150 * Math.cos(rad));
+    ctx.lineTo(centerX, mirrorY);
+    ctx.stroke();
+
+    // Reflected ray
+    ctx.strokeStyle = '#ec4899';
+    ctx.beginPath();
+    ctx.moveTo(centerX, mirrorY);
+    ctx.lineTo(centerX + 150 * Math.sin(rad), mirrorY - 150 * Math.cos(rad));
+    ctx.stroke();
+
+    // Normal
+    ctx.strokeStyle = '#64748b';
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(centerX, mirrorY);
+    ctx.lineTo(centerX, mirrorY - 100);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runWaves() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Amplitude: <input type="range" id="amp" min="20" max="100" value="50"></label>
+    <label>Frequency: <input type="range" id="freq" min="1" max="10" value="3" step="0.5"></label>
+  `;
+  
+  explanation.innerHTML = `<strong>Waves:</strong> Higher amplitude means taller waves. Higher frequency means more waves per second.`;
+
+  let amp = 50, freq = 3;
+  let time = 0;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('amp').oninput = (e) => amp = +e.target.value;
+  document.getElementById('freq').oninput = (e) => freq = +e.target.value;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 3;
+    for (let x = 0; x < canvas.width; x++) {
+      const y = canvas.height/2 + amp * Math.sin((x * 0.02 * freq) + time);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    time += 0.05;
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
 // Quizzes
 const quizzes = [
   {
@@ -413,17 +653,20 @@ const quizzes = [
       {
         q: "What happens if no net force acts on an object?",
         options: ["It accelerates", "It stays at constant velocity", "It stops immediately", "It falls"],
-        a: 1
+        a: 1,
+        exp: "Newton's 1st Law: An object in motion stays in motion (constant velocity) unless acted on by a net force."
       },
       {
         q: "F = ma is which law?",
         options: ["1st Law", "2nd Law", "3rd Law", "Law of Gravity"],
-        a: 1
+        a: 1,
+        exp: "Newton's 2nd Law directly relates force, mass, and acceleration: F = ma."
       },
       {
         q: "Action and reaction forces are:",
         options: ["Equal and opposite", "Always on the same object", "Unequal", "Only for gravity"],
-        a: 0
+        a: 0,
+        exp: "Newton's 3rd Law: For every action there is an equal and opposite reaction."
       }
     ]
   },
@@ -434,12 +677,56 @@ const quizzes = [
       {
         q: "In vacuum, a feather and a hammer fall:",
         options: ["Hammer faster", "Feather faster", "At the same rate", "Neither falls"],
-        a: 2
+        a: 2,
+        exp: "Without air resistance, all objects fall at the same rate regardless of mass."
       },
       {
         q: "Best angle for maximum range of a projectile (no air)?",
         options: ["30°", "45°", "60°", "90°"],
-        a: 1
+        a: 1,
+        exp: "On flat ground with no air resistance, 45° gives the maximum horizontal range."
+      }
+    ]
+  },
+  {
+    id: 'electricity-quiz',
+    title: 'Electricity Basics',
+    questions: [
+      {
+        q: "What does Ohm's Law state?",
+        options: ["V = IR", "P = IV", "F = ma", "E = mc²"],
+        a: 0,
+        exp: "Ohm's Law: Voltage = Current × Resistance (V = IR)."
+      },
+      {
+        q: "If you double the resistance and keep voltage the same, current:",
+        options: ["Doubles", "Halves", "Stays the same", "Becomes zero"],
+        a: 1,
+        exp: "Since I = V/R, doubling R halves the current."
+      },
+      {
+        q: "A higher voltage with the same resistance produces:",
+        options: ["Less current", "More current", "No change", "Zero current"],
+        a: 1,
+        exp: "Current is directly proportional to voltage when resistance is constant."
+      }
+    ]
+  },
+  {
+    id: 'optics-quiz',
+    title: 'Light & Optics Quiz',
+    questions: [
+      {
+        q: "The Law of Reflection says:",
+        options: ["Angle of incidence = angle of reflection", "Light always bends", "Mirrors absorb light", "Angle of incidence is always 45°"],
+        a: 0,
+        exp: "The angle of incidence equals the angle of reflection."
+      },
+      {
+        q: "When light hits a mirror at 30°, the reflected angle is:",
+        options: ["15°", "30°", "45°", "60°"],
+        a: 1,
+        exp: "Reflection angle always matches the incidence angle."
       }
     ]
   }
@@ -489,11 +776,20 @@ function answer(i) {
     btns[i].classList.add('correct');
     score++;
     state.points += 10;
+    if (window.playSound) window.playSound('correct');
   } else {
     btns[i].classList.add('wrong');
     btns[q.a].classList.add('correct');
+    if (window.playSound) window.playSound('wrong');
   }
   updateStats();
+
+  // Show explanation
+  const expDiv = document.createElement('div');
+  expDiv.className = 'explanation';
+  expDiv.style.marginTop = '1rem';
+  expDiv.innerHTML = `<strong>Explanation:</strong> ${q.exp || 'Good try!'}`;
+  document.getElementById('quiz-container').appendChild(expDiv);
   
   setTimeout(() => {
     currentQ++;
@@ -502,7 +798,7 @@ function answer(i) {
     } else {
       finishQuiz();
     }
-  }, 1200);
+  }, 1800);
 }
 
 function finishQuiz() {
@@ -524,18 +820,35 @@ function renderAchievements() {
     { id: 'all-sims', name: 'Lab Master', unlocked: state.completedSims.length >= simulations.length },
     { id: 'points-100', name: 'Rising Star', unlocked: state.points >= 100 },
     { id: 'points-300', name: 'Physics Pro', unlocked: state.points >= 300 },
-    { id: 'quiz-ace', name: 'Quiz Ace', unlocked: Object.values(state.quizScores).some(s => s >= 80) }
+    { id: 'points-500', name: 'Einstein', unlocked: state.points >= 500 },
+    { id: 'quiz-ace', name: 'Quiz Ace', unlocked: Object.values(state.quizScores).some(s => s >= 80) },
+    { id: 'quiz-master', name: 'Quiz Master', unlocked: Object.keys(state.quizScores).length >= 3 }
   ];
   
   document.getElementById('achievements').innerHTML = badges.map(b => 
     `<div class="badge ${b.unlocked ? 'unlocked' : ''}">${b.unlocked ? '🏆' : '🔒'} ${b.name}</div>`
-  ).join('');
+  ).join('') + `
+    <div style="margin-top:1.5rem;">
+      <button class="btn" onclick="resetProgress()">Reset Progress</button>
+      <button class="btn" id="theme-btn" onclick="toggleTheme()" style="margin-left:0.5rem;">☀️</button>
+      <button class="btn" onclick="window.soundEnabled = !window.soundEnabled; localStorage.setItem('soundEnabled', window.soundEnabled);" style="margin-left:0.5rem;">${window.soundEnabled ? '🔊' : '🔇'}</button>
+    </div>
+  `;
 }
 
 // Init
 updateStats();
 renderTopics();
 showSection('home');
+
+// Apply saved theme
+if (localStorage.getItem('theme') === 'light') {
+  document.body.classList.add('light-theme');
+  setTimeout(() => {
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.textContent = '🌙';
+  }, 100);
+}
 
 // PWA Service Worker registration
 if ('serviceWorker' in navigator) {

@@ -1,5 +1,4 @@
 {
-  "id": "/",
   "name": "FunPhysics - Learn Physics Playfully",
   "short_name": "FunPhysics",
   "description": "Interactive physics learning app with simulations, quizzes, and fun challenges.",
@@ -8,7 +7,6 @@
   "background_color": "#0f172a",
   "theme_color": "#6366f1",
   "orientation": "portrait-primary",
-  "categories": ["education", "games", "entertainment"],
   "icons": [
     {
       "src": "icon-192.png",
@@ -19,22 +17,6 @@
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshot-narrow.jpg",
-      "sizes": "784x1176",
-      "type": "image/jpeg",
-      "form_factor": "narrow",
-      "label": "FunPhysics home screen"
-    },
-    {
-      "src": "screenshot-wide.jpg",
-      "sizes": "1176x784",
-      "type": "image/jpeg",
-      "form_factor": "wide",
-      "label": "FunPhysics projectile lab"
     }
   ]
 }

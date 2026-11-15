@@ -319,8 +319,40 @@ footer {
   font-size: 0.9rem;
 }
 
-@media (max-width: 600px) {
-  .hero h1 { font-size: 1.6rem; }
-  .nav { justify-content: center; }
-  #physics-canvas { width: 100%; }
+.light-theme {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+}
+
+.light-theme body,
+body.light-theme {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: var(--text);
+}
+
+.light-theme .header {
+  border-bottom-color: #e2e8f0;
+}
+
+.light-theme .nav-btn {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.light-theme .section,
+.light-theme .hero,
+.light-theme .topic-card,
+.light-theme .sim-card,
+.light-theme .quiz-card,
+.light-theme .stat-card,
+.light-theme .explanation {
+  background: var(--card);
+  color: var(--text);
+}
+
+.light-theme #physics-canvas {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
