@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FunPhysics - Learn Physics Playfully</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">⚡ FunPhysics</div>
+      <div class="stats">
+        <span id="points">⭐ 0</span>
+        <span id="level">Lv 1</span>
+      </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+      <button class="nav-btn active" data-section="home">🏠 Home</button>
+      <button class="nav-btn" data-section="simulations">🔬 Labs</button>
+      <button class="nav-btn" data-section="quizzes">🎯 Quizzes</button>
+      <button class="nav-btn" data-section="progress">📊 Progress</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Home Section -->
+      <section id="home" class="section active">
+        <div class="hero">
+          <h1>Discover Physics the Fun Way! 🚀</h1>
+          <p>Interactive simulations, cool experiments, and challenges that make learning stick.</p>
+          <button class="cta-btn" onclick="showSection('simulations')">Start Exploring →</button>
+        </div>
+        <div class="topics-grid" id="topics-grid">
+          <!-- Topics loaded dynamically -->
+        </div>
+      </section>
+
+      <!-- Simulations Section -->
+      <section id="simulations" class="section">
+        <h2>Interactive Physics Labs 🧪</h2>
+        <div class="sim-list" id="sim-list"></div>
+        <div id="sim-container" class="sim-container hidden">
+          <button class="back-btn" onclick="closeSim()">← Back to Labs</button>
+          <h3 id="sim-title"></h3>
+          <div id="sim-canvas-wrapper">
+            <canvas id="physics-canvas" width="600" height="400"></canvas>
+          </div>
+          <div id="sim-controls" class="controls"></div>
+          <div id="sim-explanation" class="explanation"></div>
+        </div>
+      </section>
+
+      <!-- Quizzes Section -->
+      <section id="quizzes" class="section">
+        <h2>Test Your Knowledge 🎯</h2>
+        <div id="quiz-list"></div>
+        <div id="quiz-container" class="quiz-container hidden"></div>
+      </section>
+
+      <!-- Progress Section -->
+      <section id="progress" class="section">
+        <h2>Your Progress 📈</h2>
+        <div class="progress-stats">
+          <div class="stat-card"><h3 id="total-points">0</h3><p>Total Points</p></div>
+          <div class="stat-card"><h3 id="completed-sims">0</h3><p>Labs Completed</p></div>
+          <div class="stat-card"><h3 id="quiz-score">0%</h3><p>Avg Quiz Score</p></div>
+        </div>
+        <div id="achievements" class="achievements"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>FunPhysics • Made for curious minds • Learn by doing!</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
