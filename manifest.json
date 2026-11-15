@@ -23,18 +23,18 @@
   ],
   "screenshots": [
     {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "screenshot-narrow.jpg",
+      "sizes": "784x1176",
+      "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "FunPhysics app"
+      "label": "FunPhysics home screen"
     },
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "screenshot-wide.jpg",
+      "sizes": "1176x784",
+      "type": "image/jpeg",
       "form_factor": "wide",
-      "label": "FunPhysics"
+      "label": "FunPhysics projectile lab"
     }
   ]
 }
