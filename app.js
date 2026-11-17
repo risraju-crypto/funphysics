@@ -91,12 +91,14 @@ function showSection(id) {
 
 // Topics for home
 const topics = [
-  { emoji: '🍎', title: 'Newton\'s Laws', desc: 'Forces, motion & inertia' },
-  { emoji: '🌍', title: 'Gravity', desc: 'Falling objects & orbits' },
-  { emoji: '🎯', title: 'Projectile Motion', desc: 'Angles, speed & trajectory' },
-  { emoji: '⏰', title: 'Pendulum', desc: 'Simple harmonic motion' },
-  { emoji: '💡', title: 'Electricity', desc: 'Circuits & Ohm\'s Law' },
-  { emoji: '🌈', title: 'Light & Optics', desc: 'Reflection & refraction' }
+  { emoji: '🍎', title: 'Mechanics', desc: 'Forces, motion & Newton’s laws' },
+  { emoji: '🌍', title: 'Gravity & Projectiles', desc: 'Falling objects & trajectories' },
+  { emoji: '⚡', title: 'Work & Energy', desc: 'Kinetic and potential energy' },
+  { emoji: '💡', title: 'Electricity', desc: 'Circuits & Ohm’s Law' },
+  { emoji: '🧲', title: 'Magnetism', desc: 'Fields and poles' },
+  { emoji: '🌈', title: 'Light & Waves', desc: 'Reflection, refraction & waves' },
+  { emoji: '🌡️', title: 'Heat & Thermo', desc: 'Temperature and energy' },
+  { emoji: '⚛️', title: 'Atomic Structure', desc: 'Protons, neutrons, electrons' }
 ];
 
 function renderTopics() {
@@ -160,6 +162,62 @@ const simulations = [
     desc: 'Amplitude and frequency of waves',
     emoji: '🌊',
     run: runWaves
+  },
+  {
+    id: 'energy',
+    title: 'Work & Energy',
+    desc: 'Kinetic and potential energy',
+    emoji: '⚡',
+    run: runEnergy
+  },
+  {
+    id: 'circular',
+    title: 'Circular Motion',
+    desc: 'Centripetal force and orbits',
+    emoji: '🔄',
+    run: runCircular
+  },
+  {
+    id: 'thermo',
+    title: 'Heat & Temperature',
+    desc: 'Thermal expansion and heat transfer',
+    emoji: '🌡️',
+    run: runThermo
+  },
+  {
+    id: 'magnet',
+    title: 'Magnetism Basics',
+    desc: 'Magnetic fields and poles',
+    emoji: '🧲',
+    run: runMagnet
+  },
+  {
+    id: 'atom',
+    title: 'Atomic Structure',
+    desc: 'Protons, neutrons, electrons',
+    emoji: '⚛️',
+    run: runAtom
+  },
+  {
+    id: 'refraction',
+    title: 'Light Refraction',
+    desc: 'How light bends through materials',
+    emoji: '💎',
+    run: runRefraction
+  },
+  {
+    id: 'lever',
+    title: 'Simple Machines - Lever',
+    desc: 'Mechanical advantage of levers',
+    emoji: '⚖️',
+    run: runLever
+  },
+  {
+    id: 'nuclear',
+    title: 'Nuclear Basics',
+    desc: 'Radioactive decay intro',
+    emoji: '☢️',
+    run: runNuclear
   }
 ];
 
@@ -644,6 +702,455 @@ function runWaves() {
   animate();
 }
 
+function runEnergy() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Height (m): <input type="range" id="height" min="1" max="20" value="10"></label>
+    <label>Mass (kg): <input type="range" id="mass-e" min="1" max="10" value="2"></label>
+    <button class="btn" onclick="dropEnergy()">Drop Object</button>
+  `;
+  
+  explanation.innerHTML = `<strong>Energy:</strong> Potential energy (mgh) converts to kinetic energy (½mv²) as the object falls.`;
+
+  let h = 10, m = 2, y = 50, vy = 0;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('height').oninput = (e) => h = +e.target.value;
+  document.getElementById('mass-e').oninput = (e) => m = +e.target.value;
+
+  window.dropEnergy = () => { y = 50; vy = 0; };
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+    vy += 0.5;
+    y += vy;
+    if (y > canvas.height - 40) { y = canvas.height - 40; vy = 0; }
+
+    const pe = (m * 9.8 * (canvas.height - 20 - y)/20).toFixed(1);
+    const ke = (0.5 * m * vy * vy).toFixed(1);
+
+    ctx.fillStyle = '#ec4899';
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, y, 20, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = '16px Inter';
+    ctx.fillText('PE: ' + pe + ' J', 50, 50);
+    ctx.fillText('KE: ' + ke + ' J', 50, 80);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runCircular() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Speed: <input type="range" id="circ-speed" min="1" max="10" value="3"></label>
+  `;
+  
+  explanation.innerHTML = `<strong>Circular Motion:</strong> Centripetal force keeps the object moving in a circle. Higher speed needs more force.`;
+
+  let angle = 0, speed = 3;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('circ-speed').oninput = (e) => speed = +e.target.value;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const cx = canvas.width/2, cy = canvas.height/2, r = 120;
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+
+    angle += speed * 0.02;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+
+    ctx.fillStyle = '#6366f1';
+    ctx.beginPath();
+    ctx.arc(x, y, 12, 0, Math.PI*2);
+    ctx.fill();
+
+    // Centripetal arrow
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(cx, cy);
+    ctx.stroke();
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runThermo() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Temperature: <input type="range" id="temp" min="0" max="100" value="25"> <span id="temp-val">25°C</span></label>
+  `;
+  
+  explanation.innerHTML = `<strong>Thermodynamics:</strong> Higher temperature means faster particle motion. Heat flows from hot to cold.`;
+
+  let temp = 25;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('temp').oninput = (e) => {
+    temp = +e.target.value;
+    document.getElementById('temp-val').textContent = temp + '°C';
+  };
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const particles = 40;
+    const speed = temp / 10;
+    for (let i = 0; i < particles; i++) {
+      const x = 50 + Math.random() * (canvas.width - 100);
+      const y = 50 + Math.random() * (canvas.height - 100);
+      const dx = (Math.random() - 0.5) * speed;
+      const dy = (Math.random() - 0.5) * speed;
+      ctx.fillStyle = `hsl(${200 - temp}, 80%, 60%)`;
+      ctx.beginPath();
+      ctx.arc(x + dx*5, y + dy*5, 4, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '18px Poppins';
+    ctx.fillText(temp + '°C', canvas.width/2 - 30, 40);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runMagnet() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <button class="btn" onclick="flipMagnet()">Flip Magnet</button>
+  `;
+  
+  explanation.innerHTML = `<strong>Magnetism:</strong> Opposite poles attract. Like poles repel. Field lines go from N to S.`;
+
+  let flipped = false;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  window.flipMagnet = () => flipped = !flipped;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Magnet
+    const mx = canvas.width/2 - 60;
+    ctx.fillStyle = flipped ? '#ef4444' : '#3b82f6';
+    ctx.fillRect(mx, 150, 50, 80);
+    ctx.fillStyle = flipped ? '#3b82f6' : '#ef4444';
+    ctx.fillRect(mx + 50, 150, 50, 80);
+    ctx.fillStyle = 'white';
+    ctx.font = '16px Inter';
+    ctx.fillText(flipped ? 'S' : 'N', mx + 15, 195);
+    ctx.fillText(flipped ? 'N' : 'S', mx + 65, 195);
+
+    // Field lines
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    for (let i = -2; i <= 2; i++) {
+      ctx.beginPath();
+      ctx.arc(canvas.width/2, 190, 80 + i*15, Math.PI*0.2, Math.PI*0.8);
+      ctx.stroke();
+    }
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runAtom() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Electrons: <input type="range" id="electrons" min="1" max="8" value="2"></label>
+  `;
+  
+  explanation.innerHTML = `<strong>Atomic Structure:</strong> Nucleus has protons (+) and neutrons (0). Electrons (-) orbit outside.`;
+
+  let eCount = 2;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('electrons').oninput = (e) => eCount = +e.target.value;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const cx = canvas.width/2, cy = canvas.height/2;
+
+    // Nucleus
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 25, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.font = '12px Inter';
+    ctx.fillText('Nucleus', cx - 25, cy + 5);
+
+    // Electron orbits
+    for (let i = 1; i <= 3; i++) {
+      ctx.strokeStyle = '#334155';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 50 + i*30, 0, Math.PI*2);
+      ctx.stroke();
+    }
+
+    // Electrons
+    for (let i = 0; i < eCount; i++) {
+      const orbit = 1 + (i % 3);
+      const angle = (Date.now()/500 + i*2) % (Math.PI*2);
+      const r = 50 + orbit*30;
+      const ex = cx + r * Math.cos(angle);
+      const ey = cy + r * Math.sin(angle);
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      ctx.arc(ex, ey, 6, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runRefraction() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Angle of Incidence: <input type="range" id="refr-angle" min="10" max="70" value="40"> <span id="refr-val">40°</span></label>
+    <label>Refractive Index: <input type="range" id="n" min="1.0" max="2.0" step="0.1" value="1.5"></label>
+  `;
+  
+  explanation.innerHTML = `<strong>Refraction:</strong> Light bends when it enters a different medium. Higher refractive index → more bending (Snell's Law).`;
+
+  let angle = 40, n = 1.5;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('refr-angle').oninput = (e) => {
+    angle = +e.target.value;
+    document.getElementById('refr-val').textContent = angle + '°';
+  };
+  document.getElementById('n').oninput = (e) => n = +e.target.value;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Interface
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height/2);
+    ctx.lineTo(canvas.width, canvas.height/2);
+    ctx.stroke();
+
+    const rad = angle * Math.PI / 180;
+    const cx = canvas.width/2;
+    const interfaceY = canvas.height/2;
+
+    // Incident ray
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx - 120 * Math.sin(rad), interfaceY - 120 * Math.cos(rad));
+    ctx.lineTo(cx, interfaceY);
+    ctx.stroke();
+
+    // Refracted ray (simplified bending)
+    const refrAngle = Math.asin(Math.sin(rad) / n);
+    ctx.strokeStyle = '#ec4899';
+    ctx.beginPath();
+    ctx.moveTo(cx, interfaceY);
+    ctx.lineTo(cx + 120 * Math.sin(refrAngle), interfaceY + 120 * Math.cos(refrAngle));
+    ctx.stroke();
+
+    ctx.fillStyle = '#6366f1';
+    ctx.font = '16px Inter';
+    ctx.fillText('n = ' + n.toFixed(1), 20, 40);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runLever() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Effort Distance: <input type="range" id="effort-d" min="1" max="5" value="3"></label>
+    <label>Load Distance: <input type="range" id="load-d" min="1" max="5" value="1"></label>
+    <button class="btn" onclick="applyLever()">Apply Force</button>
+  `;
+  
+  explanation.innerHTML = `<strong>Levers:</strong> Mechanical advantage = Effort distance / Load distance. Longer effort arm makes it easier to lift the load.`;
+
+  let effortD = 3, loadD = 1, lifted = false;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  document.getElementById('effort-d').oninput = (e) => effortD = +e.target.value;
+  document.getElementById('load-d').oninput = (e) => loadD = +e.target.value;
+  window.applyLever = () => lifted = !lifted;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const fulcrumX = canvas.width / 2;
+    const baseY = 300;
+
+    // Fulcrum
+    ctx.fillStyle = '#64748b';
+    ctx.beginPath();
+    ctx.moveTo(fulcrumX, baseY);
+    ctx.lineTo(fulcrumX - 15, baseY + 30);
+    ctx.lineTo(fulcrumX + 15, baseY + 30);
+    ctx.fill();
+
+    // Beam
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(fulcrumX - effortD * 40, baseY - (lifted ? 20 : 0));
+    ctx.lineTo(fulcrumX + loadD * 40, baseY + (lifted ? 20 : 0));
+    ctx.stroke();
+
+    // Load
+    ctx.fillStyle = '#ec4899';
+    ctx.fillRect(fulcrumX + loadD * 40 - 15, baseY + (lifted ? 20 : 0) - 30, 30, 30);
+
+    // Effort
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(fulcrumX - effortD * 40 - 15, baseY - (lifted ? 20 : 0) - 30, 30, 30);
+
+    const ma = (effortD / loadD).toFixed(1);
+    ctx.fillStyle = '#6366f1';
+    ctx.font = '16px Inter';
+    ctx.fillText('Mechanical Advantage: ' + ma, 20, 50);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runNuclear() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+  
+  controls.innerHTML = `
+    <label>Half-life speed: <input type="range" id="half" min="1" max="5" value="2"></label>
+    <button class="btn" onclick="resetNuclear()">Reset Atoms</button>
+  `;
+  
+  explanation.innerHTML = `<strong>Nuclear Decay:</strong> Unstable nuclei decay over time. Half-life is the time for half the atoms to decay.`;
+
+  let atoms = [];
+  let halfSpeed = 2;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  function spawnAtoms() {
+    atoms = [];
+    for (let i = 0; i < 60; i++) {
+      atoms.push({
+        x: 50 + Math.random() * (canvas.width - 100),
+        y: 50 + Math.random() * (canvas.height - 100),
+        stable: true,
+        age: 0
+      });
+    }
+  }
+  spawnAtoms();
+
+  document.getElementById('half').oninput = (e) => halfSpeed = +e.target.value;
+  window.resetNuclear = spawnAtoms;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    let stableCount = 0;
+    atoms.forEach(a => {
+      a.age += halfSpeed * 0.01;
+      if (a.stable && Math.random() < a.age * 0.002) a.stable = false;
+      if (a.stable) stableCount++;
+
+      ctx.fillStyle = a.stable ? '#10b981' : '#ef4444';
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, 6, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '16px Inter';
+    ctx.fillText('Stable atoms: ' + stableCount, 20, 40);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
 // Quizzes
 const quizzes = [
   {
@@ -727,6 +1234,90 @@ const quizzes = [
         options: ["15°", "30°", "45°", "60°"],
         a: 1,
         exp: "Reflection angle always matches the incidence angle."
+      }
+    ]
+  },
+  {
+    id: 'energy-quiz',
+    title: 'Work & Energy Quiz',
+    questions: [
+      {
+        q: "Kinetic energy depends on:",
+        options: ["Mass and velocity", "Only height", "Only force", "Temperature"],
+        a: 0,
+        exp: "KE = ½mv² — it depends on mass and speed."
+      },
+      {
+        q: "Potential energy increases when:",
+        options: ["An object falls", "An object is lifted higher", "Speed increases", "Mass decreases"],
+        a: 1,
+        exp: "Gravitational PE = mgh — higher height means more potential energy."
+      }
+    ]
+  },
+  {
+    id: 'thermo-quiz',
+    title: 'Heat & Temperature',
+    questions: [
+      {
+        q: "Heat flows from:",
+        options: ["Cold to hot", "Hot to cold", "Only in metals", "Never"],
+        a: 1,
+        exp: "Heat always flows from higher temperature to lower temperature."
+      },
+      {
+        q: "Absolute zero is:",
+        options: ["0°C", "0°F", "0 K", "100°C"],
+        a: 2,
+        exp: "0 Kelvin is absolute zero — the lowest possible temperature."
+      }
+    ]
+  },
+  {
+    id: 'atom-quiz',
+    title: 'Atomic Structure Quiz',
+    questions: [
+      {
+        q: "The nucleus contains:",
+        options: ["Only electrons", "Protons and neutrons", "Only protons", "Protons and electrons"],
+        a: 1,
+        exp: "The nucleus has protons (positive) and neutrons (neutral). Electrons orbit outside."
+      },
+      {
+        q: "Electrons have a charge of:",
+        options: ["Positive", "Negative", "Neutral", "Variable"],
+        a: 1,
+        exp: "Electrons carry a negative charge."
+      }
+    ]
+  },
+  {
+    id: 'refraction-quiz',
+    title: 'Refraction Quiz',
+    questions: [
+      {
+        q: "Light bends when it:",
+        options: ["Stays in the same medium", "Enters a different medium", "Hits a mirror", "Is absorbed"],
+        a: 1,
+        exp: "Refraction happens when light passes from one medium into another with a different refractive index."
+      },
+      {
+        q: "A higher refractive index causes:",
+        options: ["Less bending", "More bending", "No change", "Light to stop"],
+        a: 1,
+        exp: "Higher refractive index means light bends more (Snell's Law)."
+      }
+    ]
+  },
+  {
+    id: 'nuclear-quiz',
+    title: 'Nuclear Basics Quiz',
+    questions: [
+      {
+        q: "Half-life is the time for:",
+        options: ["All atoms to decay", "Half the atoms to decay", "One atom to decay", "None to decay"],
+        a: 1,
+        exp: "Half-life is the time required for half of the radioactive atoms in a sample to decay."
       }
     ]
   }
