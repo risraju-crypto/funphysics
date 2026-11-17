@@ -1,6 +1,7 @@
 {
   "name": "FunPhysics - Learn Physics Playfully",
   "short_name": "FunPhysics",
+  "id": "https://risraju-crypto.github.io/funphysics/",
   "description": "Interactive physics learning app with simulations, quizzes, and fun challenges for students up to age 18.",
   "start_url": "./index.html",
   "scope": "./",
@@ -36,7 +37,7 @@
   "screenshots": [
     {
       "src": "screenshot-narrow.jpg",
-      "sizes": "540x720",
+      "sizes": "784x1168",
       "type": "image/jpeg",
       "form_factor": "narrow"
     },
