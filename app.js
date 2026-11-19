@@ -71,23 +71,33 @@ function updateStats() {
   localStorage.setItem('quizScores', JSON.stringify(state.quizScores));
 }
 
-// Navigation
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    showSection(btn.dataset.section);
-  });
+// Navigation — event delegation so taps still work if the bar is re-rendered
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest && e.target.closest('.nav-btn');
+  if (!btn || !btn.dataset.section) return;
+  e.preventDefault();
+  showSection(btn.dataset.section);
 });
 
 function showSection(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (id === 'simulations') renderSimList();
-  if (id === 'quizzes') renderQuizList();
-  if (id === 'progress') renderAchievements();
-  if (id === 'home') renderTopics();
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.section === id);
+  });
+  target.classList.add('active');
+  window.scrollTo(0, 0);
+  try {
+    if (id === 'simulations') renderSimList();
+    if (id === 'quizzes') renderQuizList();
+    if (id === 'progress') renderAchievements();
+    if (id === 'home') renderTopics();
+  } catch (err) {
+    console.error(err);
+  }
 }
+window.showSection = showSection;
 
 // Topics for home
 const topics = [
@@ -223,21 +233,29 @@ const simulations = [
 
 function renderSimList() {
   const list = document.getElementById('sim-list');
+  list.style.display = '';
+  list.classList.remove('hidden');
   list.innerHTML = simulations.map(s => `
-    <div class="sim-card" onclick="openSim('${s.id}')">
+    <button type="button" class="sim-card" data-sim="${s.id}">
       <div style="font-size:2rem">${s.emoji}</div>
       <h3>${s.title}</h3>
       <p>${s.desc}</p>
       ${state.completedSims.includes(s.id) ? '<span style="color:#10b981">✓ Completed</span>' : ''}
-    </div>
+    </button>
   `).join('');
 }
 
 function openSim(id) {
   const sim = simulations.find(s => s.id === id);
-  document.getElementById('sim-list').classList.add('hidden');
-  document.getElementById('sim-container').classList.remove('hidden');
+  if (!sim) return;
+  const list = document.getElementById('sim-list');
+  const box = document.getElementById('sim-container');
+  list.classList.add('hidden');
+  list.style.display = 'none';
+  box.classList.remove('hidden');
+  box.style.display = 'block';
   document.getElementById('sim-title').textContent = sim.title;
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   sim.run();
   if (!state.completedSims.includes(id)) {
     state.completedSims.push(id);
@@ -245,11 +263,22 @@ function openSim(id) {
     updateStats();
   }
 }
+window.openSim = openSim;
+
+document.addEventListener('click', (e) => {
+  const card = e.target.closest && e.target.closest('[data-sim]');
+  if (!card) return;
+  e.preventDefault();
+  openSim(card.dataset.sim);
+});
 
 function closeSim() {
-  document.getElementById('sim-list').classList.remove('hidden');
-  document.getElementById('sim-container').classList.add('hidden');
-  // Stop any running animations
+  const list = document.getElementById('sim-list');
+  const box = document.getElementById('sim-container');
+  list.classList.remove('hidden');
+  list.style.display = '';
+  box.classList.add('hidden');
+  box.style.display = 'none';
   if (window.animId) cancelAnimationFrame(window.animId);
 }
 
