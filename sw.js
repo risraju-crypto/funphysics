@@ -1,4 +1,4 @@
-const CACHE_NAME = 'funphysics-v7';
+const CACHE_NAME = 'funphysics-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -26,15 +26,24 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then(res => {
-      return res || fetch(e.request).then(response => {
-        if (response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, responseClone));
+  const url = new URL(e.request.url);
+  const isAppFile = url.origin === location.origin &&
+    /\.(html|js|css|json)?$/.test(url.pathname);
+
+  if (e.request.mode === 'navigate' || isAppFile) {
+    e.respondWith(
+      fetch(e.request).then(response => {
+        if (response && response.status === 200) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
         }
         return response;
-      }).catch(() => caches.match('./index.html'));
-    })
+      }).catch(() => caches.match(e.request).then(res => res || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  e.respondWith(
+    caches.match(e.request).then(res => res || fetch(e.request))
   );
 });
