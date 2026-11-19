@@ -232,6 +232,27 @@ const simulations = [
     desc: 'Radioactive decay intro',
     emoji: '☢️',
     run: runNuclear
+  },
+  {
+    id: 'collision',
+    title: 'Collisions',
+    desc: 'Momentum when two objects hit',
+    emoji: '💥',
+    run: runCollision
+  },
+  {
+    id: 'spring',
+    title: 'Spring Force',
+    desc: 'Hooke\'s law: F = kx',
+    emoji: '🪀',
+    run: runSpring
+  },
+  {
+    id: 'incline',
+    title: 'Inclined Plane',
+    desc: 'How slope changes the slide',
+    emoji: '📐',
+    run: runIncline
   }
 ];
 
@@ -1184,6 +1205,208 @@ function runNuclear() {
   animate();
 }
 
+function runCollision() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+
+  controls.innerHTML = `
+    <label>Left mass: <input type="range" id="m1" min="1" max="8" value="2"></label>
+    <label>Right mass: <input type="range" id="m2" min="1" max="8" value="4"></label>
+    <button class="btn" id="go-hit">Collide</button>
+  `;
+  explanation.innerHTML = `<strong>Momentum:</strong> In a collision, total momentum stays the same. A heavier object changes speed less.`;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  let m1 = 2, m2 = 4;
+  let x1 = 80, x2 = canvas.width - 140;
+  let v1 = 4, v2 = -1.5;
+  let running = false;
+
+  document.getElementById('m1').oninput = (e) => { m1 = +e.target.value; };
+  document.getElementById('m2').oninput = (e) => { m2 = +e.target.value; };
+  document.getElementById('go-hit').onclick = () => {
+    x1 = 80;
+    x2 = canvas.width - 140;
+    v1 = 4;
+    v2 = -1.5;
+    running = true;
+  };
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(0, 280, canvas.width, 8);
+
+    if (running) {
+      x1 += v1;
+      x2 += v2;
+      const w1 = 30 + m1 * 8;
+      const w2 = 30 + m2 * 8;
+      if (x1 + w1 >= x2) {
+        const u1 = v1, u2 = v2;
+        v1 = (u1 * (m1 - m2) + 2 * m2 * u2) / (m1 + m2);
+        v2 = (u2 * (m2 - m1) + 2 * m1 * u1) / (m1 + m2);
+        x1 = x2 - w1;
+      }
+      if (x1 < 10 || x2 > canvas.width - 20) running = false;
+    }
+
+    const w1 = 30 + m1 * 8;
+    const w2 = 30 + m2 * 8;
+    ctx.fillStyle = '#6366f1';
+    ctx.fillRect(x1, 280 - (30 + m1 * 6), w1, 30 + m1 * 6);
+    ctx.fillStyle = '#ec4899';
+    ctx.fillRect(x2, 280 - (30 + m2 * 6), w2, 30 + m2 * 6);
+
+    const p = (m1 * v1 + m2 * v2).toFixed(1);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '16px Inter';
+    ctx.fillText('Total momentum: ' + p, 20, 40);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runSpring() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+
+  controls.innerHTML = `
+    <label>Stiffness k: <input type="range" id="k" min="1" max="10" value="4"></label>
+    <label>Pull: <input type="range" id="pull" min="20" max="140" value="70"></label>
+    <button class="btn" id="go-spring">Release</button>
+  `;
+  explanation.innerHTML = `<strong>Hooke's law:</strong> The spring pulls back harder the more you stretch it. F = kx.`;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  let k = 4, pull = 70, x = 180, v = 0, going = false;
+  const rest = 180;
+
+  document.getElementById('k').oninput = (e) => { k = +e.target.value; };
+  document.getElementById('pull').oninput = (e) => {
+    pull = +e.target.value;
+    if (!going) x = rest + pull;
+  };
+  document.getElementById('go-spring').onclick = () => {
+    x = rest + pull;
+    v = 0;
+    going = true;
+  };
+  x = rest + pull;
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (going) {
+      const force = -k * 0.02 * (x - rest);
+      v += force;
+      v *= 0.995;
+      x += v;
+    }
+
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(40, 200);
+    const coils = 12;
+    for (let i = 0; i <= coils; i++) {
+      const px = 40 + ((x - 40) * i) / coils;
+      const py = 200 + (i % 2 === 0 ? -16 : 16);
+      ctx.lineTo(px, py);
+    }
+    ctx.lineTo(x, 200);
+    ctx.stroke();
+
+    ctx.fillStyle = '#6366f1';
+    ctx.fillRect(x, 175, 46, 50);
+
+    const stretch = Math.abs(x - rest).toFixed(0);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '16px Inter';
+    ctx.fillText('Stretch: ' + stretch + '   F = k × stretch', 20, 40);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function runIncline() {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  const controls = document.getElementById('sim-controls');
+  const explanation = document.getElementById('sim-explanation');
+
+  controls.innerHTML = `
+    <label>Angle: <input type="range" id="slope" min="10" max="50" value="25"> <span id="slope-val">25°</span></label>
+    <button class="btn" id="go-slide">Slide</button>
+  `;
+  explanation.innerHTML = `<strong>Inclined plane:</strong> Only part of the weight pulls the object down the slope. A steeper angle means a faster slide.`;
+
+  canvas.width = canvas.parentElement.clientWidth - 20;
+  canvas.height = 400;
+
+  let angle = 25, t = 0, sliding = false;
+
+  document.getElementById('slope').oninput = (e) => {
+    angle = +e.target.value;
+    document.getElementById('slope-val').textContent = angle + '°';
+    if (!sliding) t = 0;
+  };
+  document.getElementById('go-slide').onclick = () => { t = 0; sliding = true; };
+
+  function animate() {
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const rad = angle * Math.PI / 180;
+    const base = Math.min(canvas.width - 80, 460);
+    const x0 = 60, y0 = 320;
+    const x1 = x0 + base;
+    const y1 = y0 - base * Math.tan(rad);
+
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y0);
+    ctx.lineTo(x1, y1);
+    ctx.closePath();
+    ctx.fillStyle = '#1e293b';
+    ctx.fill();
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    if (sliding) t = Math.min(t + 0.004 * (0.4 + angle / 40), 0.92);
+    const along = t;
+    const bx = x1 - along * (x1 - x0);
+    const by = y1 + along * (y0 - y1);
+
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(-rad);
+    ctx.fillStyle = '#ec4899';
+    ctx.fillRect(-18, -28, 36, 28);
+    ctx.restore();
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '16px Inter';
+    ctx.fillText('Steeper slope → faster slide', 20, 40);
+
+    window.animId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
 // Quizzes
 const quizzes = [
   {
@@ -1351,6 +1574,42 @@ const quizzes = [
         options: ["All atoms to decay", "Half the atoms to decay", "One atom to decay", "None to decay"],
         a: 1,
         exp: "Half-life is the time required for half of the radioactive atoms in a sample to decay."
+      }
+    ]
+  },
+  {
+    id: 'collision-quiz',
+    title: 'Collisions Quiz',
+    questions: [
+      {
+        q: "In a collision, what stays the same if no outside force acts?",
+        options: ["Total momentum", "Each object's speed", "The color of the objects", "Only the lighter mass"],
+        a: 0,
+        exp: "Total momentum is conserved. Each object can change speed, but the total stays the same."
+      }
+    ]
+  },
+  {
+    id: 'spring-quiz',
+    title: 'Spring Force Quiz',
+    questions: [
+      {
+        q: "Hooke's law says the spring force is",
+        options: ["F = kx", "F = ma", "F = mgh", "F = mv"],
+        a: 0,
+        exp: "F = kx. A stiffer spring (larger k) or a bigger stretch gives a bigger force."
+      }
+    ]
+  },
+  {
+    id: 'incline-quiz',
+    title: 'Inclined Plane Quiz',
+    questions: [
+      {
+        q: "Making the slope steeper makes the object",
+        options: ["Slide faster", "Slide slower", "Float", "Stop sooner"],
+        a: 0,
+        exp: "A larger angle means a larger component of weight down the slope, so the object speeds up faster."
       }
     ]
   }
