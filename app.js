@@ -82,11 +82,15 @@ document.addEventListener('click', (e) => {
 function showSection(id) {
   const target = document.getElementById(id);
   if (!target) return;
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.section === id);
   });
   target.classList.add('active');
+  target.style.display = 'block';
   window.scrollTo(0, 0);
   try {
     if (id === 'simulations') renderSimList();
@@ -1470,7 +1474,4 @@ if (localStorage.getItem('theme') === 'light') {
   }, 100);
 }
 
-// PWA Service Worker registration
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+// Do not register a service worker. An old one was keeping broken files on the phone.
