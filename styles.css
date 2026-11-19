@@ -178,8 +178,12 @@ body {
   border-radius: 1rem;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .sim-container.hidden, .quiz-container.hidden {
-  display: none;
+  display: none !important;
 }
 
 #physics-canvas {
