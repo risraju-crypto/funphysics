@@ -1,4 +1,4 @@
-const CACHE_NAME = 'funphysics-v10';
+const CACHE_NAME = 'funphysics-v11';
 const ASSETS = [
   './',
   './index.html',
